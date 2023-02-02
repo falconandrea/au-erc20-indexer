@@ -105,6 +105,7 @@ function App () {
   }
   return (
     <Box w='100vw'>
+      <p className='copyright'>By <a href='https://github.com/falconandrea/au-erc20-indexer' title='' target='_blank' rel='noreferrer'>Falcon Andrea</a></p>
       {!loggedAccount &&
         (
           <Button

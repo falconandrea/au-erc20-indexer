@@ -51,6 +51,16 @@ button:hover {
   background: #646cff;
 }
 
+.copyright {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+}
+.copyright a {
+  color: #213547;
+  text-decoration: underline;
+}
+
 .loader-container {
   position: fixed;
   top: 0;
