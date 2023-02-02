@@ -10,12 +10,14 @@ import {
 } from '@chakra-ui/react'
 import { Alchemy, Network, Utils } from 'alchemy-sdk'
 import { useState } from 'react'
+import ClipLoader from 'react-spinners/ClipLoader'
 
 function App () {
   const [userAddress, setUserAddress] = useState('')
   const [results, setResults] = useState([])
   const [hasQueried, setHasQueried] = useState(false)
   const [tokenDataObjects, setTokenDataObjects] = useState([])
+  const [loadingInProgress, setLoading] = useState(false)
 
   async function getTokenBalance () {
     const config = {
@@ -24,6 +26,10 @@ function App () {
     }
 
     const alchemy = new Alchemy(config)
+
+    // Active loading
+    setLoading(true)
+
     const data = await alchemy.core.getTokenBalances(userAddress)
 
     // Remove empty tokens
@@ -43,11 +49,18 @@ function App () {
       tokenData.push(result)
     }
 
+    // Remove loading
+    setLoading(false)
+
     setTokenDataObjects(tokenData)
     setHasQueried(true)
   }
   return (
     <Box w='100vw'>
+      {loadingInProgress && (
+        <div className='loader-container'>
+          <ClipLoader color='#fff' loading={loadingInProgress} size={150} />
+        </div>)}
       <Center>
         <Flex
           alignItems='center'
