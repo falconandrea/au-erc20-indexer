@@ -4,7 +4,6 @@ import {
   Center,
   Flex,
   Heading,
-  Image,
   Input,
   SimpleGrid,
   Text
@@ -26,20 +25,25 @@ function App () {
 
     const alchemy = new Alchemy(config)
     const data = await alchemy.core.getTokenBalances(userAddress)
-    console.log(data)
 
-    setResults(data)
+    // Remove empty tokens
+    data.tokenBalances = data.tokenBalances.map(item => {
+      item.tokenBalance = item.tokenBalance.toString()
+      return item
+    }).filter((item) => item.tokenBalance > 0)
 
-    const tokenDataPromises = []
+    setResults(data.tokenBalances)
 
-    for (let i = 0; i < data.tokenBalances.length; i++) {
-      const tokenData = alchemy.core.getTokenMetadata(
-        data.tokenBalances[i].contractAddress
+    const tokenData = []
+
+    for (const item of data.tokenBalances) {
+      const result = await alchemy.core.getTokenMetadata(
+        item.contractAddress
       )
-      tokenDataPromises.push(tokenData)
+      tokenData.push(result)
     }
 
-    setTokenDataObjects(await Promise.all(tokenDataPromises))
+    setTokenDataObjects(tokenData)
     setHasQueried(true)
   }
   return (
@@ -86,7 +90,8 @@ function App () {
         {hasQueried
           ? (
             <SimpleGrid w='90vw' columns={4} spacing={24}>
-              {results.tokenBalances.map((e, i) => {
+              {results.map((e, i) => {
+                console.log(e, i)
                 return (
                   <Flex
                     flexDir='column'
@@ -96,7 +101,8 @@ function App () {
                     key={i}
                   >
                     <Box>
-                      <b>Symbol:</b> ${tokenDataObjects[i].symbol}&nbsp;
+                      <b>Name:</b> ${tokenDataObjects[i].name} <br />
+                      <b>Symbol:</b> ${tokenDataObjects[i].symbol}
                     </Box>
                     <Box>
                       <b>Balance:</b>&nbsp;
@@ -105,7 +111,6 @@ function App () {
                         tokenDataObjects[i].decimals
                       )}
                     </Box>
-                    <Image src={tokenDataObjects[i].logo} />
                   </Flex>
                 )
               })}
