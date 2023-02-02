@@ -69,6 +69,18 @@ button:focus-visible {
   padding-top: 15rem;
 }
 
+table {
+  width: 100% !important;
+  max-width: 100% !important;
+  white-space: normal;
+  border-collapse: collapse;
+}
+table td,
+table th {
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

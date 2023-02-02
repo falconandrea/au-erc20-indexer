@@ -5,8 +5,14 @@ import {
   Flex,
   Heading,
   Input,
-  SimpleGrid,
-  Text
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr
 } from '@chakra-ui/react'
 import { Alchemy, Network, Utils } from 'alchemy-sdk'
 import { useState } from 'react'
@@ -102,32 +108,34 @@ function App () {
 
         {hasQueried
           ? (
-            <SimpleGrid w='90vw' columns={4} spacing={24}>
-              {results.map((e, i) => {
-                console.log(e, i)
-                return (
-                  <Flex
-                    flexDir='column'
-                    color='white'
-                    bg='blue'
-                    w='20vw'
-                    key={i}
-                  >
-                    <Box>
-                      <b>Name:</b> ${tokenDataObjects[i].name} <br />
-                      <b>Symbol:</b> ${tokenDataObjects[i].symbol}
-                    </Box>
-                    <Box>
-                      <b>Balance:</b>&nbsp;
-                      {Utils.formatUnits(
-                        e.tokenBalance,
-                        tokenDataObjects[i].decimals
-                      )}
-                    </Box>
-                  </Flex>
-                )
-              })}
-            </SimpleGrid>
+            <TableContainer w='90vw'>
+              <Table size='sm'>
+                <Thead>
+                  <Tr>
+                    <Th>Name</Th>
+                    <Th>Symbol</Th>
+                    <Th isNumeric>Balance</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {results.map((e, i) => {
+                    return (
+                      <Tr
+                        key={i}
+                      >
+                        <Td>${tokenDataObjects[i].name}</Td>
+                        <Td>${tokenDataObjects[i].symbol}</Td>
+                        <Td isNumeric>{Utils.formatUnits(
+                          e.tokenBalance,
+                          tokenDataObjects[i].decimals
+                        )}
+                        </Td>
+                      </Tr>
+                    )
+                  })}
+                </Tbody>
+              </Table>
+            </TableContainer>
             )
           : (
               'Please make a query! This may take a few seconds...'
