@@ -24,6 +24,7 @@ function App () {
   const [hasQueried, setHasQueried] = useState(false)
   const [tokenDataObjects, setTokenDataObjects] = useState([])
   const [loadingInProgress, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   async function getTokenBalance () {
     const config = {
@@ -33,33 +34,49 @@ function App () {
 
     const alchemy = new Alchemy(config)
 
+    if (!userAddress) {
+      setErrorMessage('Missing address')
+      return false
+    }
+    setErrorMessage('')
+
+    // Check if address is an ENS
+    const address = await alchemy.core.resolveName(userAddress)
+    if (address) setUserAddress(address)
+
     // Active loading
     setLoading(true)
 
-    const data = await alchemy.core.getTokenBalances(userAddress)
+    try {
+      const data = await alchemy.core.getTokenBalances(userAddress)
 
-    // Remove empty tokens
-    data.tokenBalances = data.tokenBalances.map(item => {
-      item.tokenBalance = item.tokenBalance.toString()
-      return item
-    }).filter((item) => item.tokenBalance > 0)
+      // Remove empty tokens
+      data.tokenBalances = data.tokenBalances.map(item => {
+        item.tokenBalance = item.tokenBalance.toString()
+        return item
+      }).filter((item) => item.tokenBalance > 0)
 
-    setResults(data.tokenBalances)
+      setResults(data.tokenBalances)
 
-    const tokenData = []
+      const tokenData = []
 
-    for (const item of data.tokenBalances) {
-      const result = await alchemy.core.getTokenMetadata(
-        item.contractAddress
-      )
-      tokenData.push(result)
+      for (const item of data.tokenBalances) {
+        const result = await alchemy.core.getTokenMetadata(
+          item.contractAddress
+        )
+        tokenData.push(result)
+      }
+
+      // Remove loading
+      setLoading(false)
+
+      setTokenDataObjects(tokenData)
+      setHasQueried(true)
+    } catch (err) {
+      // Remove loading
+      setLoading(false)
+      setErrorMessage('Error during API call')
     }
-
-    // Remove loading
-    setLoading(false)
-
-    setTokenDataObjects(tokenData)
-    setHasQueried(true)
   }
   return (
     <Box w='100vw'>
@@ -99,47 +116,57 @@ function App () {
           p={4}
           bgColor='white'
           fontSize={24}
+          required
         />
-        <Button fontSize={20} onClick={getTokenBalance} mt={36} bgColor='blue'>
+        <Button fontSize={20} onClick={getTokenBalance} mt={36}>
           Check ERC-20 Token Balances
         </Button>
 
-        <Heading my={36}>ERC-20 token balances:</Heading>
+        {errorMessage !== '' && (
+          <p class='errorMessage'>{errorMessage}</p>
+        )}
 
-        {hasQueried
-          ? (
-            <TableContainer w='90vw'>
-              <Table size='sm'>
-                <Thead>
-                  <Tr>
-                    <Th>Name</Th>
-                    <Th>Symbol</Th>
-                    <Th isNumeric>Balance</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {results.map((e, i) => {
-                    return (
-                      <Tr
-                        key={i}
-                      >
-                        <Td>${tokenDataObjects[i].name}</Td>
-                        <Td>${tokenDataObjects[i].symbol}</Td>
-                        <Td isNumeric>{Utils.formatUnits(
-                          e.tokenBalance,
-                          tokenDataObjects[i].decimals
-                        )}
-                        </Td>
-                      </Tr>
-                    )
-                  })}
-                </Tbody>
-              </Table>
-            </TableContainer>
-            )
-          : (
-              'Please make a query! This may take a few seconds...'
-            )}
+        {hasQueried &&
+          (
+            <div>
+              <Heading my={36}>ERC-20 token balances:</Heading>
+              {results.length > 0
+                ? (
+                  <div class='containerTable'>
+                    <TableContainer w='90vw'>
+                      <Table size='sm'>
+                        <Thead>
+                          <Tr>
+                            <Th>Name</Th>
+                            <Th>Symbol</Th>
+                            <Th isNumeric>Balance</Th>
+                          </Tr>
+                        </Thead>
+                        <Tbody>
+                          {results.map((e, i) => {
+                            return (
+                              <Tr
+                                key={i}
+                              >
+                                <Td>${tokenDataObjects[i].name}</Td>
+                                <Td>${tokenDataObjects[i].symbol}</Td>
+                                <Td isNumeric>{Utils.formatUnits(
+                                  e.tokenBalance,
+                                  tokenDataObjects[i].decimals
+                                )}
+                                </Td>
+                              </Tr>
+                            )
+                          })}
+                        </Tbody>
+                      </Table>
+                    </TableContainer>
+                    <small>Note: only the first 1000 results are shown</small>
+                  </div>
+                  )
+                : <p class='noTokens'>No tokens with positive balance found</p>}
+            </div>
+          )}
       </Flex>
     </Box>
   )
