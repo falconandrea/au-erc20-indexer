@@ -50,10 +50,6 @@ button {
 button:hover {
   background: #646cff;
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
 
 .loader-container {
   position: fixed;
@@ -91,6 +87,12 @@ table th {
 
 .noTokens {
   text-align: center;
+}
+
+.loginButton {
+  position: absolute !important;
+  top: 1rem;
+  right: 1rem;
 }
 
 .errorMessage {

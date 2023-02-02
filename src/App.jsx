@@ -15,6 +15,7 @@ import {
   Tr
 } from '@chakra-ui/react'
 import { Alchemy, Network, Utils } from 'alchemy-sdk'
+import { ethers } from 'ethers'
 import { useState } from 'react'
 import ClipLoader from 'react-spinners/ClipLoader'
 
@@ -25,6 +26,20 @@ function App () {
   const [tokenDataObjects, setTokenDataObjects] = useState([])
   const [loadingInProgress, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [loggedAccount, setLoggedAccount] = useState('')
+
+  async function connectWallet () {
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      await provider.send('eth_requestAccounts', [])
+      const newAccount = await provider.getSigner()
+      const address = await newAccount.getAddress()
+      setUserAddress(address)
+      setLoggedAccount(address)
+    } else {
+      console.log('Please Install MetaMask!!!')
+    }
+  }
 
   async function getTokenBalance () {
     const config = {
@@ -90,6 +105,15 @@ function App () {
   }
   return (
     <Box w='100vw'>
+      {!loggedAccount &&
+        (
+          <Button
+            className='loginButton'
+            onClick={connectWallet}
+          >
+            Get your address from Wallet
+          </Button>
+        )}
       {loadingInProgress && (
         <div className='loader-container'>
           <ClipLoader color='#fff' loading={loadingInProgress} size={150} />
@@ -127,6 +151,7 @@ function App () {
           bgColor='white'
           fontSize={24}
           required
+          value={userAddress}
         />
         <Button fontSize={20} onClick={getTokenBalance} mt={36}>
           Check ERC-20 Token Balances
