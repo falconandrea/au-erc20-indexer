@@ -75,7 +75,17 @@ function App () {
     } catch (err) {
       // Remove loading
       setLoading(false)
-      setErrorMessage('Error during API call')
+
+      // Reset results
+      setTokenDataObjects([])
+      setResults([])
+
+      // Set error message
+      if (err.message.includes('ENS name not configured')) {
+        setErrorMessage('Check address or ENS name')
+      } else {
+        setErrorMessage('Error during API call')
+      }
     }
   }
   return (
@@ -123,7 +133,7 @@ function App () {
         </Button>
 
         {errorMessage !== '' && (
-          <p class='errorMessage'>{errorMessage}</p>
+          <p className='errorMessage'>{errorMessage}</p>
         )}
 
         {hasQueried &&
@@ -132,7 +142,7 @@ function App () {
               <Heading my={36}>ERC-20 token balances:</Heading>
               {results.length > 0
                 ? (
-                  <div class='containerTable'>
+                  <div className='containerTable'>
                     <TableContainer w='90vw'>
                       <Table size='sm'>
                         <Thead>
@@ -164,7 +174,7 @@ function App () {
                     <small>Note: only the first 1000 results are shown</small>
                   </div>
                   )
-                : <p class='noTokens'>No tokens with positive balance found</p>}
+                : <p className='noTokens'>No tokens with positive balance found</p>}
             </div>
           )}
       </Flex>
